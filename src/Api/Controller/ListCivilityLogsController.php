@@ -2,25 +2,23 @@
 
 namespace Ralkage\CivilityFilter\Api\Controller;
 
-use Flarum\Api\Controller\AbstractListController;
 use Flarum\User\Exception\PermissionDeniedException;
 use Illuminate\Database\ConnectionInterface;
-use Ralkage\CivilityFilter\Api\Serializer\CivilityLogSerializer;
+use Laminas\Diactoros\Response\JsonResponse;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Tobscure\JsonApi\Document;
+use Psr\Http\Server\RequestHandlerInterface;
 
-class ListCivilityLogsController extends AbstractListController
+class ListCivilityLogsController implements RequestHandlerInterface
 {
-    public $serializer = CivilityLogSerializer::class;
-
-    protected $db;
+    protected ConnectionInterface $db;
 
     public function __construct(ConnectionInterface $db)
     {
         $this->db = $db;
     }
 
-    protected function data(ServerRequestInterface $request, Document $document)
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $actor = $request->getAttribute('actor');
 
@@ -35,7 +33,6 @@ class ListCivilityLogsController extends AbstractListController
 
         $query = $this->db->table('civility_logs');
 
-        // Apply filters
         if (! empty($params['filter']['username'])) {
             $query->where('username', $params['filter']['username']);
         }
@@ -45,15 +42,37 @@ class ListCivilityLogsController extends AbstractListController
 
         $total = $query->count();
 
-        $document->addMeta('total', $total);
-        $document->addMeta('perPage', $perPage);
-        $document->addMeta('currentPage', $page);
-
-        return $query
+        $logs = $query
             ->orderBy('created_at', 'desc')
             ->offset($offset)
             ->limit($perPage)
-            ->get()
-            ->all();
+            ->get();
+
+        $data = $logs->map(fn ($log) => [
+            'type' => 'civility-logs',
+            'id' => (string) $log->id,
+            'attributes' => [
+                'id' => $log->id,
+                'contentType' => $log->content_type,
+                'contentId' => $log->content_id,
+                'discussionId' => $log->discussion_id,
+                'userId' => $log->user_id,
+                'username' => $log->username,
+                'messageExcerpt' => $log->message_excerpt,
+                'civilityScore' => (int) $log->civility_score,
+                'categories' => json_decode($log->categories, true) ?: [],
+                'actionTaken' => $log->action_taken,
+                'createdAt' => $log->created_at,
+            ],
+        ])->toArray();
+
+        return new JsonResponse([
+            'data' => $data,
+            'meta' => [
+                'total' => $total,
+                'perPage' => $perPage,
+                'currentPage' => $page,
+            ],
+        ]);
     }
 }

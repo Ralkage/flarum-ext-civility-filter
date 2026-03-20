@@ -2,37 +2,35 @@
 
 namespace Ralkage\CivilityFilter\Notification;
 
+use Flarum\Database\AbstractModel;
+use Flarum\Notification\AlertableInterface;
 use Flarum\Notification\Blueprint\BlueprintInterface;
 use Flarum\Notification\MailableInterface;
 use Flarum\Post\Post;
+use Flarum\User\User;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class CivilityFlaggedBlueprint implements BlueprintInterface, MailableInterface
+class CivilityFlaggedBlueprint implements BlueprintInterface, AlertableInterface, MailableInterface
 {
-    public $post;
-    protected $action;
-    protected $reason;
-    protected $score;
-
-    public function __construct(Post $post, string $action, string $reason = '', int $score = 0)
-    {
-        $this->post = $post;
-        $this->action = $action;
-        $this->reason = $reason;
-        $this->score = $score;
+    public function __construct(
+        public Post $post,
+        public string $action,
+        public string $reason = '',
+        public int $score = 0
+    ) {
     }
 
-    public function getSubject()
+    public function getSubject(): ?AbstractModel
     {
         return $this->post;
     }
 
-    public function getFromUser()
+    public function getFromUser(): ?User
     {
         return null;
     }
 
-    public function getData()
+    public function getData(): mixed
     {
         return [
             'action' => $this->action,
@@ -41,12 +39,14 @@ class CivilityFlaggedBlueprint implements BlueprintInterface, MailableInterface
         ];
     }
 
-    public function getEmailView()
+    public function getEmailViews(): array
     {
-        return ['text' => 'ralkage-civility-filter::emails.civilityFlagged'];
+        return [
+            'text' => 'ralkage-civility-filter::emails.civilityFlagged',
+        ];
     }
 
-    public function getEmailSubject(TranslatorInterface $translator)
+    public function getEmailSubject(TranslatorInterface $translator): string
     {
         if ($this->action === 'moderated') {
             return $translator->trans('ralkage-civility-filter.email.moderated_subject');
@@ -55,12 +55,12 @@ class CivilityFlaggedBlueprint implements BlueprintInterface, MailableInterface
         return $translator->trans('ralkage-civility-filter.email.warned_subject');
     }
 
-    public static function getType()
+    public static function getType(): string
     {
         return 'civilityFlagged';
     }
 
-    public static function getSubjectModel()
+    public static function getSubjectModel(): string
     {
         return Post::class;
     }

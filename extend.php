@@ -1,6 +1,8 @@
 <?php
 
-use Flarum\Api\Serializer\BasicPostSerializer;
+use Flarum\Api\Context;
+use Flarum\Api\Resource;
+use Flarum\Api\Schema;
 use Flarum\Extend;
 use Flarum\Post\Post;
 use Ralkage\CivilityFilter\Api\Controller\CivilityStatsController;
@@ -42,18 +44,21 @@ return [
     (new Extend\Model(Post::class))
         ->cast('civility_action', 'string'),
 
-    (new Extend\ApiSerializer(BasicPostSerializer::class))
-        ->attribute('civilityAction', function ($serializer, Post $post) {
-            $actor = $serializer->getActor();
-            $isAuthor = $post->user_id === $actor->id;
+    (new Extend\ApiResource(Resource\PostResource::class))
+        ->fields(fn () => [
+            Schema\Str::make('civilityAction')
+                ->get(function (Post $post, Context $context) {
+                    $actor = $context->getActor();
+                    $isAuthor = $post->user_id === $actor->id;
 
-            if ($isAuthor || $actor->isAdmin()) {
-                return $post->civility_action ?: '';
-            }
+                    if ($isAuthor || $actor->isAdmin()) {
+                        return $post->civility_action ?: '';
+                    }
 
-            return '';
-        }),
+                    return '';
+                }),
+        ]),
 
     (new Extend\Notification())
-        ->type(CivilityFlaggedBlueprint::class, BasicPostSerializer::class, ['alert', 'email']),
+        ->type(CivilityFlaggedBlueprint::class, ['alert', 'email']),
 ];
