@@ -51,7 +51,7 @@ All thresholds are configurable in 5-point increments.
 ## Installation
 
 ```bash
-composer require ralkage/flarum-ext-civility-filter:"*@dev"
+composer require ralkage/flarum-ext-civility-filter
 php flarum migrate
 php flarum cache:clear
 ```
