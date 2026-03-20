@@ -1,16 +1,12 @@
 import app from 'flarum/forum/app';
 import { extend } from 'flarum/common/extend';
 import CommentPost from 'flarum/forum/components/CommentPost';
-import Notification from 'flarum/forum/components/Notification';
 import UserPage from 'flarum/forum/components/UserPage';
 import LinkButton from 'flarum/common/components/LinkButton';
-import LoadingIndicator from 'flarum/common/components/LoadingIndicator';
-import Page from 'flarum/common/components/Page';
+
+export { default as extend } from './extend';
 
 app.initializers.add('ralkage/civility-filter', () => {
-  // Register notification type
-  app.notificationComponents.civilityFlagged = CivilityFlaggedNotification;
-
   // Add civility notice badges to posts
   extend(CommentPost.prototype, 'headerItems', function (items) {
     const post = this.attrs.post;
@@ -58,31 +54,3 @@ app.initializers.add('ralkage/civility-filter', () => {
     }
   });
 });
-
-class CivilityFlaggedNotification extends Notification {
-  icon() {
-    return 'fas fa-shield-alt';
-  }
-
-  href() {
-    const notification = this.attrs.notification;
-    const post = notification.subject();
-    const discussion = post && post.discussion();
-
-    if (discussion) {
-      return app.route.discussion(discussion, post.number());
-    }
-    return '';
-  }
-
-  content() {
-    const notification = this.attrs.notification;
-    const data = notification.additionalData() || {};
-    const action = data.action || 'warned';
-
-    if (action === 'moderated') {
-      return app.translator.trans('ralkage-civility-filter.forum.notification_moderated');
-    }
-    return app.translator.trans('ralkage-civility-filter.forum.notification_warned');
-  }
-}
