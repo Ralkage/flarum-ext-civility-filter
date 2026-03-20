@@ -1,0 +1,59 @@
+{
+    "name": "ralkage/flarum-ext-civility-filter",
+    "description": "AI-powered civility filter that analyzes posts for incivility using Anthropic Claude or OpenAI GPT",
+    "type": "flarum-extension",
+    "keywords": [
+        "moderation",
+        "civility",
+        "ai",
+        "content-filter"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ralkage",
+            "email": "me@ralkage.com",
+            "homepage": "https://ralkage.com"
+        }
+    ],
+    "homepage": "https://ralkage.com",
+    "require": {
+        "flarum/core": "^1.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ralkage\\CivilityFilter\\": "src/"
+        }
+    },
+    "extra": {
+        "flarum-extension": {
+            "title": "Civility Filter",
+            "category": "feature",
+            "icon": {
+                "name": "fas fa-shield-alt",
+                "backgroundColor": "#e74c3c",
+                "color": "#fff"
+            }
+        },
+        "flarum-cli": {
+            "modules": {
+                "admin": true,
+                "forum": true,
+                "js": true,
+                "jsCommon": false,
+                "css": true,
+                "locale": true,
+                "gitConf": true,
+                "githubActions": true,
+                "prettier": true,
+                "typescript": true,
+                "bundlewatch": false,
+                "backendTesting": true,
+                "editorConfig": true,
+                "styleci": true
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
