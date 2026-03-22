@@ -8,7 +8,7 @@ AI-powered content moderation extension for [Flarum](https://flarum.org) that au
 
 ### AI Analysis
 - Analyzes posts in real-time before they're published
-- Supports **Anthropic Claude** (Haiku, Sonnet, Opus), **OpenAI GPT** (4o-mini, 4o, 4.1), and **OpenRouter** (200+ models)
+- Supports **Anthropic Claude** (Haiku, Sonnet, Opus), **OpenAI GPT** (5.4 Nano, 5.4 mini, 5.4 generic)), and **OpenRouter** (200+ models)
 - Customizable AI prompt for tailored moderation rules
 - Fail-open design — posts go through if the API is unavailable
 
