@@ -8,23 +8,29 @@ export default class CivilityFlaggedNotification extends Notification {
 
   href() {
     const notification = this.attrs.notification;
-    const post = notification.subject();
-    const discussion = post && post.discussion();
+    const discussion = notification.subject();
+    const data = notification.content() || {};
 
     if (discussion) {
-      return app.route.discussion(discussion, post.number());
+      return app.route.discussion(discussion, data.postNumber);
     }
     return '';
   }
 
   content() {
     const notification = this.attrs.notification;
-    const data = notification.additionalData() || {};
+    const data = notification.content() || {};
     const action = data.action || 'warned';
 
     if (action === 'moderated') {
       return app.translator.trans('ralkage-civility-filter.forum.notification_moderated');
     }
     return app.translator.trans('ralkage-civility-filter.forum.notification_warned');
+  }
+
+  excerpt() {
+    const notification = this.attrs.notification;
+    const data = notification.content() || {};
+    return data.reason || '';
   }
 }

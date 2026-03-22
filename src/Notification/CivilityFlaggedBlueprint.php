@@ -3,6 +3,7 @@
 namespace Ralkage\CivilityFilter\Notification;
 
 use Flarum\Database\AbstractModel;
+use Flarum\Discussion\Discussion;
 use Flarum\Notification\AlertableInterface;
 use Flarum\Notification\Blueprint\BlueprintInterface;
 use Flarum\Post\Post;
@@ -10,17 +11,22 @@ use Flarum\User\User;
 
 class CivilityFlaggedBlueprint implements BlueprintInterface, AlertableInterface
 {
+    public Discussion $discussion;
+    protected int $postNumber;
+
     public function __construct(
-        public Post $post,
+        Post $post,
         public string $action,
         public string $reason = '',
         public int $score = 0
     ) {
+        $this->discussion = $post->discussion;
+        $this->postNumber = $post->number;
     }
 
     public function getSubject(): ?AbstractModel
     {
-        return $this->post;
+        return $this->discussion;
     }
 
     public function getFromUser(): ?User
@@ -34,6 +40,7 @@ class CivilityFlaggedBlueprint implements BlueprintInterface, AlertableInterface
             'action' => $this->action,
             'reason' => $this->reason,
             'score' => $this->score,
+            'postNumber' => $this->postNumber,
         ];
     }
 
@@ -44,6 +51,6 @@ class CivilityFlaggedBlueprint implements BlueprintInterface, AlertableInterface
 
     public static function getSubjectModel(): string
     {
-        return Post::class;
+        return Discussion::class;
     }
 }
