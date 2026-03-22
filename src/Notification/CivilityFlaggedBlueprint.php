@@ -2,27 +2,30 @@
 
 namespace Ralkage\CivilityFilter\Notification;
 
+use Flarum\Discussion\Discussion;
 use Flarum\Notification\Blueprint\BlueprintInterface;
 use Flarum\Post\Post;
 
 class CivilityFlaggedBlueprint implements BlueprintInterface
 {
-    public $post;
+    public $discussion;
     protected $action;
     protected $reason;
     protected $score;
+    protected $postNumber;
 
     public function __construct(Post $post, string $action, string $reason = '', int $score = 0)
     {
-        $this->post = $post;
+        $this->discussion = $post->discussion;
         $this->action = $action;
         $this->reason = $reason;
         $this->score = $score;
+        $this->postNumber = $post->number;
     }
 
     public function getSubject()
     {
-        return $this->post;
+        return $this->discussion;
     }
 
     public function getFromUser()
@@ -36,6 +39,7 @@ class CivilityFlaggedBlueprint implements BlueprintInterface
             'action' => $this->action,
             'reason' => $this->reason,
             'score' => $this->score,
+            'postNumber' => $this->postNumber,
         ];
     }
 
@@ -46,6 +50,6 @@ class CivilityFlaggedBlueprint implements BlueprintInterface
 
     public static function getSubjectModel()
     {
-        return Post::class;
+        return Discussion::class;
     }
 }

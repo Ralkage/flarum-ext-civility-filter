@@ -1,5 +1,6 @@
 <?php
 
+use Flarum\Api\Serializer\BasicDiscussionSerializer;
 use Flarum\Api\Serializer\BasicPostSerializer;
 use Flarum\Extend;
 use Flarum\Post\Post;
@@ -52,5 +53,5 @@ return [
         }),
 
     (new Extend\Notification())
-        ->type(CivilityFlaggedBlueprint::class, BasicPostSerializer::class, ['alert']),
+        ->type(CivilityFlaggedBlueprint::class, BasicDiscussionSerializer::class, ['alert']),
 ];
