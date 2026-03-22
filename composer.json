@@ -6,7 +6,11 @@
         "moderation",
         "civility",
         "ai",
-        "content-filter"
+        "content-filter",
+        "claude",
+        "gpt",
+        "openai",
+        "openrouter"
     ],
     "license": "MIT",
     "authors": [

@@ -148,6 +148,8 @@ The AI categorizes issues found in posts:
 ## Links
 
 - [Ralkage](https://ralkage.com)
+- [Github](https://github.com/Ralkage/flarum-ext-civility-filter)
+- [Packagist](https://packagist.org/packages/ralkage/flarum-ext-civility-filter)
 
 ## License
 
