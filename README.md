@@ -2,13 +2,13 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-AI-powered content moderation extension for [Flarum](https://flarum.org) that automatically analyzes posts for civility using **Anthropic Claude** or **OpenAI GPT**.
+AI-powered content moderation extension for [Flarum](https://flarum.org) that automatically analyzes posts for civility using **Anthropic Claude**, **OpenAI GPT**, or **OpenRouter**.
 
 ## Features
 
 ### AI Analysis
 - Analyzes posts in real-time before they're published
-- Supports **Anthropic Claude** (Haiku, Sonnet, Opus) and **OpenAI GPT** (4o-mini, 4o, 4.1)
+- Supports **Anthropic Claude** (Haiku, Sonnet, Opus), **OpenAI GPT** (4o-mini, 4o, 4.1), and **OpenRouter** (200+ models)
 - Customizable AI prompt for tailored moderation rules
 - Fail-open design — posts go through if the API is unavailable
 
@@ -40,7 +40,6 @@ All thresholds are configurable in 5-point increments.
 
 ### Notifications
 - **In-App Alerts** — Users are notified when their posts are warned or moderated
-- **Email Notifications** — Optional email alerts for flagged posts
 - **Discord/Webhook Alerts** — Send rich embeds to Discord or JSON payloads to any webhook URL when posts are flagged
 
 ### Forum Integration
@@ -66,9 +65,10 @@ Navigate to the extension settings page in the admin panel. The settings are org
 - **Enable Civility Filter** — Master on/off switch
 
 ### AI Provider
-- **AI Provider** — Choose between Anthropic (Claude) or OpenAI (GPT)
+- **AI Provider** — Choose between Anthropic (Claude), OpenAI (GPT), or OpenRouter
 - **Anthropic API Key** — Your Anthropic API key
 - **OpenAI API Key** — Your OpenAI API key
+- **OpenRouter API Key** — Your OpenRouter API key (access 200+ models from one API)
 - **AI Model** — Select the model for your chosen provider
 
 ### Thresholds
@@ -143,11 +143,13 @@ The AI categorizes issues found in posts:
 
 - Flarum `^1.8`
 - PHP 8.0+
-- An API key from [Anthropic](https://console.anthropic.com/) or [OpenAI](https://platform.openai.com/)
+- An API key from [Anthropic](https://console.anthropic.com/), [OpenAI](https://platform.openai.com/), or [OpenRouter](https://openrouter.ai/)
 
 ## Links
 
 - [Ralkage](https://ralkage.com)
+- [Github](https://github.com/Ralkage/flarum-ext-civility-filter)
+- [Packagist](https://packagist.org/packages/ralkage/flarum-ext-civility-filter)
 
 ## License
 

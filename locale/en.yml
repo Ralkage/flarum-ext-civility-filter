@@ -9,6 +9,8 @@ ralkage-civility-filter:
       api_key_help: "Your Anthropic API key for Claude models."
       openai_api_key_label: "OpenAI API Key"
       openai_api_key_help: "Your OpenAI API key for GPT models."
+      openrouter_api_key_label: "OpenRouter API Key"
+      openrouter_api_key_help: "Your OpenRouter API key. Access 200+ models from one API."
       model_label: "AI Model"
       model_help: "Select a model matching your chosen provider."
       warn_threshold_label: "Warn Threshold (0-100)"
@@ -110,8 +112,5 @@ ralkage-civility-filter:
       average_score: "Average Score"
       violations: "Violations"
       no_history: "No civility history."
-  email:
-    warned_subject: "Your post was flagged by the civility filter"
-    moderated_subject: "Your post was held for moderation"
   api:
     post_blocked: "Your post was blocked by the civility filter. Please revise your message to be more respectful and constructive, then try again."

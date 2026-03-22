@@ -1,12 +1,16 @@
 {
     "name": "ralkage/flarum-ext-civility-filter",
-    "description": "AI-powered civility filter that analyzes posts for incivility using Anthropic Claude or OpenAI GPT",
+    "description": "AI-powered civility filter that analyzes posts for incivility using Anthropic Claude, OpenAI GPT, or OpenRouter",
     "type": "flarum-extension",
     "keywords": [
         "moderation",
         "civility",
         "ai",
-        "content-filter"
+        "content-filter",
+        "claude",
+        "gpt",
+        "openai",
+        "openrouter"
     ],
     "license": "MIT",
     "authors": [

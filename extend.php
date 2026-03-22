@@ -26,9 +26,6 @@ return [
 
     new Extend\Locales(__DIR__.'/locale'),
 
-    (new Extend\View())
-        ->namespace('ralkage-civility-filter', __DIR__.'/views'),
-
     (new Extend\Event())
         ->subscribe(CheckPostCivility::class),
 
@@ -60,5 +57,5 @@ return [
         ]),
 
     (new Extend\Notification())
-        ->type(CivilityFlaggedBlueprint::class, ['alert', 'email']),
+        ->type(CivilityFlaggedBlueprint::class, ['alert']),
 ];
