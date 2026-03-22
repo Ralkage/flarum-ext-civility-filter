@@ -64,10 +64,8 @@ export default class CivilityLogPage extends ExtensionPage {
         {this.buildSettingComponent({ setting: 'ralkage-civility-filter.enabled', type: 'boolean', label: app.translator.trans('ralkage-civility-filter.admin.settings.enabled_label'), help: app.translator.trans('ralkage-civility-filter.admin.settings.enabled_help') })}
 
         <h3>AI Provider</h3>
-        {this.buildSettingComponent({ setting: 'ralkage-civility-filter.ai_provider', type: 'select', label: app.translator.trans('ralkage-civility-filter.admin.settings.ai_provider_label'), help: app.translator.trans('ralkage-civility-filter.admin.settings.ai_provider_help'), options: { 'anthropic': 'Anthropic (Claude)', 'openai': 'OpenAI (GPT)' }, default: 'anthropic' })}
-        {this.buildSettingComponent({ setting: 'ralkage-civility-filter.api_key', type: 'text', label: app.translator.trans('ralkage-civility-filter.admin.settings.api_key_label'), help: app.translator.trans('ralkage-civility-filter.admin.settings.api_key_help') })}
-        {this.buildSettingComponent({ setting: 'ralkage-civility-filter.openai_api_key', type: 'text', label: app.translator.trans('ralkage-civility-filter.admin.settings.openai_api_key_label'), help: app.translator.trans('ralkage-civility-filter.admin.settings.openai_api_key_help') })}
-        {this.buildSettingComponent({ setting: 'ralkage-civility-filter.model', type: 'select', label: app.translator.trans('ralkage-civility-filter.admin.settings.model_label'), help: app.translator.trans('ralkage-civility-filter.admin.settings.model_help'), options: { 'claude-haiku-4-5-20251001': 'Claude Haiku 4.5 (Fastest)', 'claude-sonnet-4-6-20250514': 'Claude Sonnet 4.6 (Balanced)', 'claude-opus-4-6-20250609': 'Claude Opus 4.6 (Most Capable)', 'gpt-4o-mini': 'GPT-4o Mini (Fastest)', 'gpt-4o': 'GPT-4o (Balanced)', 'gpt-4.1': 'GPT-4.1 (Most Capable)' }, default: 'claude-haiku-4-5-20251001' })}
+        {this.buildSettingComponent({ setting: 'ralkage-civility-filter.ai_provider', type: 'select', label: app.translator.trans('ralkage-civility-filter.admin.settings.ai_provider_label'), help: app.translator.trans('ralkage-civility-filter.admin.settings.ai_provider_help'), options: { 'anthropic': 'Anthropic (Claude)', 'openai': 'OpenAI (GPT)', 'openrouter': 'OpenRouter' }, default: 'anthropic' })}
+        {this.providerFields()}
 
         <h3>Thresholds</h3>
         {this.buildSettingComponent({ setting: 'ralkage-civility-filter.warn_threshold', type: 'number', label: app.translator.trans('ralkage-civility-filter.admin.settings.warn_threshold_label'), help: app.translator.trans('ralkage-civility-filter.admin.settings.warn_threshold_help'), min: 0, max: 100, step: 5, placeholder: '60' })}
@@ -95,6 +93,47 @@ export default class CivilityLogPage extends ExtensionPage {
         {this.buildSettingComponent({ setting: 'ralkage-civility-filter.rate_limit', type: 'number', label: app.translator.trans('ralkage-civility-filter.admin.settings.rate_limit_label'), help: app.translator.trans('ralkage-civility-filter.admin.settings.rate_limit_help'), min: 0, placeholder: '0' })}
 
         <div className="Form-group">{this.submitButton()}</div>
+      </div>
+    );
+  }
+
+  providerFields() {
+    const provider = this.setting('ralkage-civility-filter.ai_provider')() || 'anthropic';
+
+    const modelsByProvider = {
+      anthropic: {
+        'claude-haiku-4-5-20251001': 'Claude Haiku 4.5 (Fastest)',
+        'claude-sonnet-4-6-20250514': 'Claude Sonnet 4.6 (Balanced)',
+        'claude-opus-4-6-20250609': 'Claude Opus 4.6 (Most Capable)',
+      },
+      openai: {
+        'gpt-4o-mini': 'GPT-4o Mini (Fastest)',
+        'gpt-4o': 'GPT-4o (Balanced)',
+        'gpt-4.1': 'GPT-4.1 (Most Capable)',
+      },
+      openrouter: {
+        'anthropic/claude-haiku-4-5-20251001': 'Claude Haiku 4.5',
+        'anthropic/claude-sonnet-4-6-20250514': 'Claude Sonnet 4.6',
+        'openai/gpt-4o-mini': 'GPT-4o Mini',
+        'openai/gpt-4o': 'GPT-4o',
+        'google/gemini-2.5-flash-preview': 'Gemini 2.5 Flash',
+        'meta-llama/llama-4-maverick': 'Llama 4 Maverick',
+      },
+    };
+
+    const apiKeyFields = {
+      anthropic: { setting: 'ralkage-civility-filter.api_key', label: app.translator.trans('ralkage-civility-filter.admin.settings.api_key_label'), help: app.translator.trans('ralkage-civility-filter.admin.settings.api_key_help') },
+      openai: { setting: 'ralkage-civility-filter.openai_api_key', label: app.translator.trans('ralkage-civility-filter.admin.settings.openai_api_key_label'), help: app.translator.trans('ralkage-civility-filter.admin.settings.openai_api_key_help') },
+      openrouter: { setting: 'ralkage-civility-filter.openrouter_api_key', label: app.translator.trans('ralkage-civility-filter.admin.settings.openrouter_api_key_label'), help: app.translator.trans('ralkage-civility-filter.admin.settings.openrouter_api_key_help') },
+    };
+
+    const keyField = apiKeyFields[provider];
+    const models = modelsByProvider[provider] || {};
+
+    return (
+      <div>
+        {this.buildSettingComponent({ setting: keyField.setting, type: 'text', label: keyField.label, help: keyField.help })}
+        {this.buildSettingComponent({ setting: 'ralkage-civility-filter.model', type: 'select', label: app.translator.trans('ralkage-civility-filter.admin.settings.model_label'), help: app.translator.trans('ralkage-civility-filter.admin.settings.model_help'), options: models, default: Object.keys(models)[0] })}
       </div>
     );
   }

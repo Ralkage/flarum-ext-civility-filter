@@ -110,10 +110,21 @@ class CivilityChecker
             return $this->settings->get('ralkage-civility-filter.openai_api_key') ?: null;
         }
 
+        if ($provider === 'openrouter') {
+            return $this->settings->get('ralkage-civility-filter.openrouter_api_key') ?: null;
+        }
+
         return $this->settings->get('ralkage-civility-filter.api_key') ?: null;
     }
 
     // --- Word Blocklist Pre-filter ---
+
+    public function checkBlocklistPublic(string $text): ?array
+    {
+        $plainText = $this->stripMarkup($text);
+
+        return $this->checkBlocklist($plainText);
+    }
 
     protected function checkBlocklist(string $text): ?array
     {
@@ -217,6 +228,10 @@ class CivilityChecker
             return $this->callOpenAiApi($prompt);
         }
 
+        if ($provider === 'openrouter') {
+            return $this->callOpenRouterApi($prompt);
+        }
+
         return $this->callClaudeApi($prompt);
     }
 
@@ -241,7 +256,7 @@ class CivilityChecker
                         ['role' => 'user', 'content' => $prompt],
                     ],
                 ],
-                'timeout' => 15,
+                'timeout' => 8,
             ]);
 
             $body = json_decode($response->getBody()->getContents(), true);
@@ -278,7 +293,7 @@ class CivilityChecker
                         ['role' => 'user', 'content' => $prompt],
                     ],
                 ],
-                'timeout' => 15,
+                'timeout' => 8,
             ]);
 
             $body = json_decode($response->getBody()->getContents(), true);
@@ -288,6 +303,44 @@ class CivilityChecker
             }
         } catch (\Exception $e) {
             $this->logger->error('CivilityFilter OpenAI API error: ' . $e->getMessage());
+        }
+
+        return null;
+    }
+
+    public function callOpenRouterApi(string $prompt): ?array
+    {
+        $apiKey = $this->settings->get('ralkage-civility-filter.openrouter_api_key');
+        $model = $this->settings->get('ralkage-civility-filter.model') ?: 'openai/gpt-4o-mini';
+
+        $client = new Client();
+
+        try {
+            $response = $client->post('https://openrouter.ai/api/v1/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $apiKey,
+                    'Content-Type' => 'application/json',
+                    'HTTP-Referer' => $this->settings->get('url') ?: 'http://localhost',
+                    'X-Title' => 'Civility Filter',
+                ],
+                'json' => [
+                    'model' => $model,
+                    'max_tokens' => 256,
+                    'temperature' => 0.1,
+                    'messages' => [
+                        ['role' => 'user', 'content' => $prompt],
+                    ],
+                ],
+                'timeout' => 8,
+            ]);
+
+            $body = json_decode($response->getBody()->getContents(), true);
+
+            if (isset($body['choices'][0]['message']['content'])) {
+                return $this->parseJsonResponse($body['choices'][0]['message']['content']);
+            }
+        } catch (\Exception $e) {
+            $this->logger->error('CivilityFilter OpenRouter API error: ' . $e->getMessage());
         }
 
         return null;
@@ -351,9 +404,22 @@ class CivilityChecker
 
     protected function stripMarkup(string $message): string
     {
-        $text = preg_replace('/<QUOTE[^>]*>.*?<\/QUOTE>/si', '', $message);
+        // Remove s9e inline formatting source/end tags: <s>[b]</s> <e>[/b]</e> <i>> </i>
+        $text = preg_replace('/<[sei]>[^<]*<\/[sei]>/si', '', $message);
+
+        // Strip all XML/HTML tags but keep inner text (including quotes, code, etc.)
         $text = strip_tags($text);
+
+        // Remove BBCode tags [b], [/b], [url=...], [quote], [code], etc.
         $text = preg_replace('/\[\/?\w+[^\]]*\]/', '', $text);
+
+        // Remove Markdown formatting: **, __, ~~, #, >, `, etc.
+        $text = preg_replace('/[*_~`#>]+/', '', $text);
+
+        // Remove Markdown link/image syntax: [text](url) ![alt](url)
+        $text = preg_replace('/!?\[([^\]]*)\]\([^)]*\)/', '$1', $text);
+
+        // Collapse whitespace
         $text = preg_replace('/\s+/', ' ', $text);
 
         return trim($text);

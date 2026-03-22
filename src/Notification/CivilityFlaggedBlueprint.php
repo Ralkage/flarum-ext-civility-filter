@@ -3,11 +3,9 @@
 namespace Ralkage\CivilityFilter\Notification;
 
 use Flarum\Notification\Blueprint\BlueprintInterface;
-use Flarum\Notification\MailableInterface;
 use Flarum\Post\Post;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
-class CivilityFlaggedBlueprint implements BlueprintInterface, MailableInterface
+class CivilityFlaggedBlueprint implements BlueprintInterface
 {
     public $post;
     protected $action;
@@ -39,20 +37,6 @@ class CivilityFlaggedBlueprint implements BlueprintInterface, MailableInterface
             'reason' => $this->reason,
             'score' => $this->score,
         ];
-    }
-
-    public function getEmailView()
-    {
-        return ['text' => 'ralkage-civility-filter::emails.civilityFlagged'];
-    }
-
-    public function getEmailSubject(TranslatorInterface $translator)
-    {
-        if ($this->action === 'moderated') {
-            return $translator->trans('ralkage-civility-filter.email.moderated_subject');
-        }
-
-        return $translator->trans('ralkage-civility-filter.email.warned_subject');
     }
 
     public static function getType()

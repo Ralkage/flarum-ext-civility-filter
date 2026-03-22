@@ -9,6 +9,7 @@ use Flarum\Notification\NotificationSyncer;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\User\User;
 use Illuminate\Events\Dispatcher;
+use Psr\Log\LoggerInterface;
 use Ralkage\CivilityFilter\CivilityChecker;
 use Ralkage\CivilityFilter\Notification\CivilityFlaggedBlueprint;
 use Ralkage\CivilityFilter\WebhookNotifier;
@@ -20,19 +21,22 @@ class CheckPostCivility
     protected $settings;
     protected $notifications;
     protected $webhook;
+    protected $logger;
 
     public function __construct(
         CivilityChecker $checker,
         Translator $translator,
         SettingsRepositoryInterface $settings,
         NotificationSyncer $notifications,
-        WebhookNotifier $webhook
+        WebhookNotifier $webhook,
+        LoggerInterface $logger
     ) {
         $this->checker = $checker;
         $this->translator = $translator;
         $this->settings = $settings;
         $this->notifications = $notifications;
         $this->webhook = $webhook;
+        $this->logger = $logger;
     }
 
     public function subscribe(Dispatcher $events): void
@@ -45,26 +49,35 @@ class CheckPostCivility
         $post = $event->post;
         $actor = $event->actor;
 
+        $this->logger->info('CivilityFilter: handle() called for user ' . $actor->username);
+
         if ($post->exists && ! $post->isDirty('content')) {
+            $this->logger->info('CivilityFilter: skipping - not dirty');
             return;
         }
 
         if (! $this->checker->isEnabled()) {
+            $this->logger->info('CivilityFilter: skipping - not enabled');
             return;
         }
 
         if ($actor->isAdmin() || $actor->hasPermission('ralkage-civility-filter.bypass')) {
+            $this->logger->info('CivilityFilter: skipping - bypass permission');
             return;
         }
 
         $content = $post->content;
         if (empty($content)) {
+            $this->logger->info('CivilityFilter: skipping - empty content');
             return;
         }
 
         if (! $this->isMonitoredDiscussion($post)) {
+            $this->logger->info('CivilityFilter: skipping - not monitored');
             return;
         }
+
+        $this->logger->info('CivilityFilter: analyzing content (' . mb_strlen($content) . ' chars)');
 
         $context = [];
         if ($post->discussion) {
@@ -72,11 +85,10 @@ class CheckPostCivility
         }
 
         $result = $this->checker->analyze($content, $context);
+        $this->logger->info('CivilityFilter: result - score:' . $result['score'] . ' action:' . $result['action']);
 
-        // Apply the action
         switch ($result['action']) {
             case 'blocked':
-                // Log blocked posts immediately (no afterSave since post won't save)
                 $this->checker->logResult($result, [
                     'content_type' => 'post',
                     'content_id' => 0,
@@ -94,7 +106,6 @@ class CheckPostCivility
                     'message' => $content,
                 ]);
 
-                // Auto-suspend check even on blocked posts
                 $this->checkAutoSuspend($actor);
 
                 throw new ValidationException([
@@ -111,7 +122,6 @@ class CheckPostCivility
                 break;
         }
 
-        // afterSave for non-blocked actions
         if ($result['action'] !== 'allowed' && $result['action'] !== 'blocked') {
             $checker = $this->checker;
             $notifications = $this->notifications;
@@ -130,16 +140,13 @@ class CheckPostCivility
 
                 $checker->logResult($result, $contentInfo);
 
-                // Send notification
                 $notifications->sync(
                     new CivilityFlaggedBlueprint($post, $result['action'], $result['reason'], $result['score']),
                     [$actor]
                 );
 
-                // Webhook alert
                 $webhook->notify($result, $contentInfo);
 
-                // Auto-suspend check
                 $this->checkAutoSuspendStatic($actor, $checker, $settings);
             });
         } elseif ($result['action'] === 'allowed') {
@@ -178,10 +185,8 @@ class CheckPostCivility
         $violationCount = $checker->getRecentViolationCount($actor->id, $window);
 
         if ($violationCount >= $threshold) {
-            // Check if user has suspended_until column (flarum/suspend extension)
             $user = User::find($actor->id);
             if ($user && isset($user->suspended_until)) {
-                // Don't re-suspend if already suspended
                 if ($user->suspended_until && strtotime($user->suspended_until) > time()) {
                     return;
                 }
